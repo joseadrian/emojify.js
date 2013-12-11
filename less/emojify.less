@@ -1,8 +1,23 @@
 @emoji-size: 1.5em;
+@emoji-path: '../emoji/';
 
-.emojify { width: @emoji-size; height: @emoji-size; display: inline-block; margin-bottom: -0.25em; }
+.emojify { 
+  width: @emoji-size; 
+  height: @emoji-size; 
+  display: inline-block; 
+  margin-bottom: -0.25em; 
+  background-repeat: no-repeat;
+}
 
-// @import 'emojify.emoticons.less';
+.emojify(@emojis, @index: 1) when (@index <= length(@emojis)) {
+  @emoji: extract(@emojis, @index);
+
+  .emojify.@{emoji} { background: url('@{emoji-path}@{emoji}.png'); background-size: @emoji-size; }
+
+  .emojify(@emojis, @index + 1);
+}
+
+@import 'emojify.emoticons.less';
 @import 'emojify.people.less';
 @import 'emojify.nature.less';
 @import 'emojify.objects.less';
