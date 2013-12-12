@@ -1,39 +1,65 @@
 <?php
 
-function spritesheeter($columns = 10, $size = 20) { // ?
-  $types = glob('*', GLOB_ONLYDIR);
+define('COLUMNS', 10);
+define('SIZE', 20);
+define('PATH_LESS', '../less/spritesheet.');
+define('PATH_PNG', '');
 
-  foreach($types as $i => $type):
-    $emojis = glob($type . '/*.png');
-    $total  = count($emojis);
+function create_spritesheet($emojis = array(), $file = '')
+{
+  $total  = count($emojis);
 
-    $ss_width  = $columns * $size;
-    $ss_height = ceil($total / $columns) * $size;
+  $ss_width  = COLUMNS * SIZE;
+  $ss_height = ceil($total / COLUMNS) * SIZE;
 
-    $spritesheet  = imagecreatetruecolor($ss_width, $ss_height);
+  $spritesheet  = imagecreatetruecolor($ss_width, $ss_height);
 
-    imagealphablending($spritesheet, false);
-    $transparency = imagecolorallocatealpha($spritesheet, 0, 0, 0, 127);
-    imagefill($spritesheet, 0, 0, $transparency);
-    imagesavealpha($spritesheet, true);
+  imagealphablending($spritesheet, false);
+  $transparency = imagecolorallocatealpha($spritesheet, 0, 0, 0, 127);
+  imagefill($spritesheet, 0, 0, $transparency);
+  imagesavealpha($spritesheet, true);
 
-    foreach($emojis as $j => $emoji):
-      list($width, $height) = getimagesize($emoji);
+  foreach($emojis as $j => $emoji):
+    list($width, $height) = getimagesize($emoji);
 
-      $image = imagecreatefrompng($emoji);
+    $image = imagecreatefrompng($emoji);
 
-      $pos_x = $j % $columns * $size;
-      $pos_y = floor($j / $columns) * $size;
+    $pos_x = $j % COLUMNS * SIZE;
+    $pos_y = floor($j / COLUMNS) * SIZE;
 
-      imagecopyresampled($spritesheet, $image, $pos_x, $pos_y, 0, 0, $size, $size, $width, $height);
-    endforeach;
-
-    imagepng($spritesheet, '1.spritesheet.' . $type . '.png', 9);
+    imagecopyresampled($spritesheet, $image, $pos_x, $pos_y, 0, 0, SIZE, SIZE, $width, $height);
   endforeach;
+
+  imagepng($spritesheet, PATH_PNG . $file . '.png', 9);
+  
+  create_less_file($emojis, $file);
 }
 
-spritesheeter(10, 20);
+function emoji_map($emoji)
+{
+  $emoji = pathinfo ($emoji);
+  return $emoji['filename'];
+}
 
+function create_less_file($emojis, $file = 'all')
+{
+  $emojis = implode("\n",  array_map('emoji_map', $emojis));
+  $emojis = '/* ' . $file . ' */' . "\n.emojify('$file', $emojis)";
+  file_put_contents(PATH_LESS . $file . '.less', $emojis);
+}
+
+function generate_import()
+{
+  $less = glob(PATH_LESS . '*.less');
+  $less = '@import ' . implode("\n;@import ", $less) . ';';
+  file_put_contents(PATH_LESS . 'import.less', $less);
+}
+
+// Apply the logic you want
+$emojis = glob('*.png');
+create_spritesheet($emojis, 'all');
+
+generate_import();
 
 function separate_icons() {
 
