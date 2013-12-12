@@ -1,11 +1,15 @@
-@emoji-size: 1.5em;
+@emoji-size: 20px;
 @emoji-path: '../emoji/';
+
+/* Spritesheet */
+@emoji-mode: spritesheet; // spritesheet
+@emoji-columns: 10;
 
 .emojify { 
   width: @emoji-size; 
   height: @emoji-size; 
   display: inline-block; 
-  margin-bottom: -0.25em; 
+  // margin-bottom: -0.25em; 
   background-repeat: no-repeat;
 
   -webkit-background-size: @emoji-size; /* Safari 3.0 */
@@ -14,14 +18,25 @@
           background-size: @emoji-size;
 }
 
-.emojify(@emojis, @index: 1) when (@index <= length(@emojis)) {
+.emoji-mode(individual){
+  background-image: url('@{emoji-path}@{emoji}.png'); 
+}
+
+.emoji-mode(spritesheet){
+  background-image: url('@{emoji-path}1.spritesheet.@{type}.png');
+  background-position: (mod(@index - 1, @emoji-columns) * @emoji-size) (floor(@index / @emoji-columns) * @emoji-size);
+}
+
+// .emoji-sprite() when (@index = 1) {} Trick
+
+.emojify(@type: '', @emojis, @index: 1) when (@index <= length(@emojis)) {
   @emoji: extract(@emojis, @index);
 
   .emojify.@{emoji} { 
-    background-image: url('@{emoji-path}@{emoji}.png'); 
+    .emoji-mode(@emoji-mode);
   }
 
-  .emojify(@emojis, @index + 1);
+  .emojify(@type, @emojis, @index + 1);
 }
 
 @import 'emojify.emoticons.less';
